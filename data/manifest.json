@@ -1,6 +1,6 @@
 {
   "ledger": "Open Accountability Ledger",
-  "version": 1,
+  "version": 2,
   "updated": "2026-07-18",
   "files": [
     "open_accountability_ledger.json"
