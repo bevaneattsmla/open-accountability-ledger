@@ -1,0 +1,9 @@
+{
+  "ledger": "Open Accountability Ledger",
+  "version": 1,
+  "updated": "2026-07-18",
+  "files": [
+    "open_accountability_ledger.json"
+  ],
+  "note": "version is the cache-buster. Bump it by one on every change to any data file, or browsers keep serving the old data."
+}

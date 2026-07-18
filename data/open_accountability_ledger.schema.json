@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bevaneatts.example/schemas/open_accountability_ledger.schema.json",
+  "title": "Open Accountability Ledger — register",
+  "description": "Contract for the machine-readable Open Accountability Ledger register that any front-end reads from. Build-phase demonstrator.",
+  "type": "object",
+  "required": ["ledger", "version", "generated", "lens_order", "lenses", "entries"],
+  "additionalProperties": true,
+  "properties": {
+    "ledger": { "const": "Open Accountability Ledger" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "generated": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "status": { "type": "string" },
+    "prepared_for": { "type": "string" },
+    "one_line": { "type": "string" },
+    "discipline": {
+      "type": "object",
+      "properties": {
+        "direction": { "type": "string" },
+        "robodebt_guardrail": { "type": "string" },
+        "enforcement": { "type": "string" },
+        "honesty_rule": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "lens_order": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["A", "B", "C", "D"] },
+      "uniqueItems": true
+    },
+    "lenses": {
+      "type": "object",
+      "propertyNames": { "enum": ["A", "B", "C", "D"] },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name", "blurb"],
+        "properties": {
+          "name": { "type": "string" },
+          "blurb": { "type": "string" }
+        }
+      }
+    },
+    "status_values": { "type": "object" },
+    "confidence_values": { "type": "object" },
+    "self_commitments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "text"],
+        "properties": {
+          "id": { "type": "string" },
+          "text": { "type": "string" },
+          "detail": { "type": "string" },
+          "status": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "headline": { "type": "object" }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "required": ["id", "lens", "title", "what", "outcome", "status", "year", "source", "confidence", "public_use"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-D][0-9]+$",
+          "description": "Stable unique id, lens letter + number. Never reuse or renumber."
+        },
+        "lens": { "type": "string", "enum": ["A", "B", "C", "D"] },
+        "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "title": { "type": "string", "minLength": 1 },
+        "what": { "type": "string", "minLength": 1, "description": "What government was told, warned or claimed." },
+        "outcome": { "type": "string", "minLength": 1, "description": "What happened / whether it was acted on." },
+        "status": { "type": "string", "enum": ["DONE", "PARTIAL", "IGNORED", "RECURRING", "OVERDUE", "UNVERIFIED"] },
+        "amount": { "type": "string", "description": "Display string only. Figures are never summed; may be empty." },
+        "year": { "type": "string", "description": "Display string; may be a single year or a range like '1921 → 2027'." },
+        "source": { "type": "string", "minLength": 1 },
+        "confidence": { "type": "string", "enum": ["HIGH", "MEDIUM", "LOW"] },
+        "public_use": {
+          "type": "boolean",
+          "description": "Derived: false when status is UNVERIFIED or confidence is LOW."
+        },
+        "hold_reason": { "type": "string", "description": "Non-empty iff public_use is false." },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "description": "public_use must be false when status is UNVERIFIED",
+          "if": { "properties": { "status": { "const": "UNVERIFIED" } } },
+          "then": { "properties": { "public_use": { "const": false } } }
+        },
+        {
+          "description": "public_use must be false when confidence is LOW",
+          "if": { "properties": { "confidence": { "const": "LOW" } } },
+          "then": { "properties": { "public_use": { "const": false } } }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,342 @@
+#!/usr/bin/env python3
+"""
+build_register.py — authoring builder for the Open Accountability Ledger data layer.
+
+Emits open_accountability_ledger.json, the canonical machine-readable register.
+Run once to (re)generate the JSON from this authored source. After that the JSON
+is the source of truth; edit it (or the xlsx via a future importer) and re-run the
+view generator, not this file.
+
+Fidelity: every entry, self-commitment, lens blurb and headline figure below is a
+faithful lift from the shipped demonstrator (open_accountability_ledger.html,
+build-phase, 18 Jul 2026). Nothing is added, dropped or re-scored here.
+
+HOLD / public_use is DERIVED, not hand-set, so it can never drift from the rule the
+demonstrator uses: an entry is withheld from public use when its status is
+UNVERIFIED or its confidence is LOW.
+"""
+import json, pathlib, re
+
+GENERATED = "2026-07-18"
+VERSION = "0.1.0"
+
+def house_style(s):
+    """Strip the office's anti-AI-tell punctuation: no em-dashes, arrows, middots
+    or en-dash ranges. Commas or 'to', meaning unchanged. Curly quotes are kept
+    (they match Bevan's site voice)."""
+    if not isinstance(s, str):
+        return s
+    s = s.replace("→", " to ").replace("⟶", " to ")          # arrows
+    s = re.sub(r"(?<=\d)\s*[–—]\s*(?=\$?~?\d)", " to ", s)     # 2021–2023 / 4–78 -> to
+    s = s.replace(" — ", ", ").replace("—", ", ")             # em dash -> comma
+    s = s.replace("–", "-")                                          # stray en dash -> hyphen
+    s = s.replace(" · ", ", ").replace("·", ", ")             # middot -> comma
+    s = re.sub(r"\s{2,}", " ", s)
+    s = re.sub(r"\s+,", ",", s)
+    s = re.sub(r",\s*,", ",", s)
+    s = s.strip()
+    if re.fullmatch(r"[,\s\-]*", s):   # a value that was only a dash becomes empty
+        s = ""
+    return s
+
+def normalize(obj):
+    if isinstance(obj, str):
+        return house_style(obj)
+    if isinstance(obj, list):
+        return [normalize(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: normalize(v) for k, v in obj.items()}
+    return obj
+
+LENSES = {
+    "A": {"name": "Open Recommendations",
+          "blurb": "An inquiry or audit answer government was given — often paid for — and whether it was acted on."},
+    "B": {"name": "They Were Warned",
+          "blurb": "A documented warning, harm that followed, and the costly patch. Some entries are live and flagged unverified."},
+    "C": {"name": "Consultation Integrity",
+          "blurb": "A “we consulted” claim turned into a checkable record. Most WA cases here are not yet verified — shown honestly."},
+    "D": {"name": "The Receipts",
+          "blurb": "A specific consultant or IT-spend case, with the dollar figure and the outcome."},
+}
+
+STATUS_VALUES = {
+    "DONE":       "Recommendation/commitment fully acted on.",
+    "PARTIAL":    "Partly acted on; material commitments still open.",
+    "IGNORED":    "Answer/warning on the record; not acted on.",
+    "RECURRING":  "The same failure or finding recurs year after year.",
+    "OVERDUE":    "Action required and past due.",
+    "UNVERIFIED": "Not yet confirmed to a primary source, or a live matter not yet decided.",
+}
+CONFIDENCE_VALUES = {
+    "HIGH":   "Confirmed to a primary source; safe to use.",
+    "MEDIUM": "Sourced but with a caveat noted in `notes`; confirm at point of use.",
+    "LOW":    "Weak or single-thread sourcing; must not be used publicly until strengthened.",
+}
+
+# ---- entries: authored faithfully from the demonstrator ---------------------
+# Order preserved. `notes` carries the demonstrator's own framing/verification
+# caveats so the discipline travels with the data.
+E = [
+ # ---------- A · Open Recommendations ----------
+ dict(id="A1", lens="A", slug="robodebt-royal-commission",
+   title="Robodebt Royal Commission — 57 recs, years to act",
+   what="57 recommendations on lawful, human-supervised automated decision-making; government accepted or accepted-in-principle 56.",
+   outcome="As of late 2024 only ~28 reported fully implemented; the rest a multi-year grind that only moves while someone keeps score in public.",
+   status="PARTIAL", amount="$1.872bn settlement", year="2023",
+   source="Royal Commission into the Robodebt Scheme, Final Report (Holmes AC SC), 7 Jul 2023",
+   confidence="HIGH", notes=""),
+ dict(id="A2", lens="A", slug="aboriginal-deaths-in-custody",
+   title="Aboriginal Deaths in Custody — 339 recs, still open",
+   what="The 1991 Royal Commission made 339 recommendations; taxpayers paid for the answers decades ago.",
+   outcome="Decades on a great many remain unimplemented, with live disputes that official reviews overstated how much had been done.",
+   status="IGNORED", amount="", year="1991 · 2021 review",
+   source="Royal Commission into Aboriginal Deaths in Custody (1991); ANU CIPR",
+   confidence="HIGH", notes=""),
+ dict(id="A3", lens="A", slug="wa-ag-same-weaknesses",
+   title="WA Auditor General: “same weaknesses, year after year”",
+   what="The annual Information Systems Audit keeps reissuing the same control-weakness recommendations to agencies.",
+   outcome="AG: agencies “still not taking action… not taking the risks seriously” — the same warning recurs 2014→2017→2024→2025.",
+   status="RECURRING", amount="", year="2017",
+   source="WA Auditor General, Information Systems Audit Report 2017 (Caroline Spencer)",
+   confidence="HIGH", notes=""),
+ dict(id="A4", lens="A", slug="wa-ag-2025-65pc-carried-over",
+   title="WA AG 2025: 65% of IT findings carried over — again",
+   what="The 2025 IS audit raised 359 control findings across 53 entities; the AG notes many “do not require large technology investments to fix.”",
+   outcome="65% were unaddressed from prior years and 57% of the most serious remained unresolved — a failure of will, not budget.",
+   status="RECURRING", amount="359 findings / 53 entities", year="2025",
+   source="WA Auditor General, State Government 2025 Information Systems Audit Results",
+   confidence="HIGH", notes=""),
+ dict(id="A5", lens="A", slug="wa-ag-blowout-tracking-duplication",
+   title="WA AG told to track blowouts; govt called it “duplication”",
+   what="The AG recommended transparent tracking of major-project cost and time; in 2022 Finance and Treasury called more reporting “unnecessary duplication.”",
+   outcome="The AG tracked it anyway — and that same work then found $1.6bn blown out and information “patchy, inconsistent and not transparent.”",
+   status="IGNORED", amount="$1.6bn later found", year="2022 → 2025",
+   source="WA Auditor General, Transparency Report – Major Projects (2022)",
+   confidence="HIGH", notes=""),
+ # ---------- B · They Were Warned ----------
+ dict(id="B1", lens="B", slug="cowaramup-service-station",
+   title="Cowaramup service station — warned live, decision pending",
+   what="A 12-bay service station is before an unelected Development Assessment Panel; 100+ residents protested on the safety grounds the town's own Precinct Plan already flags.",
+   outcome="Live — decision NOT yet made. In 2017 a servo drew 297 objections and was rejected, yet a truckstop operates there now. Not an “override” yet.",
+   status="UNVERIFIED", amount="", year="2026",
+   source="DAP application DAP/26/03096 (Apr 2026); resident protest May 2026",
+   confidence="MEDIUM",
+   notes="Live matter, decision not yet made. Do not present as an override until the DAP determines it."),
+ dict(id="B2", lens="B", slug="cds-wine-container-deposit",
+   title="Container deposit scheme (wine) — warned, launched anyway",
+   what="Friends of WA Wine put it in writing: ~$1.15–1.25 real cost per bottle vs a 10c refund, ~$11m/yr for under 1% litter gain, no WA glass reprocessor, WA hit a year early. They asked for a pause.",
+   outcome="Government launched on schedule; the cost lands on regional wine country. The strongest of the four — fully documented, Warren-Blackwood's own back yard.",
+   status="IGNORED", amount="~$11m/yr industry cost", year="2026",
+   source="Friends of WA Wine submission & Minister meeting (Mar 2026)",
+   confidence="HIGH", notes=""),
+ dict(id="B3", lens="B", slug="west-coast-demersal",
+   title="West Coast demersal fishing — warned 15 years, brutal patch",
+   what="The fishery ran on an “interim” plan since 2007; overfishing was on the record ~15 years while fixes stayed too small.",
+   outcome="Dec 2025: rec fishing shut 21 months, commercial demersal permanently closed, $29.2m package. Frame only as “managed too slowly” — the science was right.",
+   status="IGNORED", amount="$29.2m support package", year="2007 → 2025",
+   source="WA West Coast Demersal Scalefish management; Dec 2025 closure",
+   confidence="HIGH", notes=""),
+ dict(id="B4", lens="B", slug="sandalwood-fpc-dbca",
+   title="Sandalwood (FPC → DBCA) — warned since 1921",
+   what="WA Forests Dept reports warned in 1921 and 1958 that harvest rates were driving sandalwood to extinction; Red-listed vulnerable in 2021, wild populations down ~90%.",
+   outcome="Control moves to DBCA from 2027 with quota quietly cut ~20%; the FPC blames bettongs and rainfall, never a century of harvest. Confirm handover scope.",
+   status="IGNORED", amount="quota 2,500t → 2,000t", year="1921 → 2027",
+   source="WA Forests Dept reports 1921 & 1958; IUCN Red List 2021",
+   confidence="MEDIUM",
+   notes="Confirm the FPC→DBCA handover scope before public use."),
+ dict(id="B5", lens="B", slug="cds-regional-refund-access",
+   title="CDS regional refund-point access — warned 2018",
+   what="A 2018 warning held that regional and remote communities would struggle to access container refund points.",
+   outcome="The warning is real and documented, but we could not confirm it materialised into closures or harm. Held as “worth checking,” not proven.",
+   status="UNVERIFIED", amount="", year="2018",
+   source="2018 regional/remote refund-point access warning",
+   confidence="LOW",
+   notes="Warning documented but not confirmed to have materialised into harm. Worth checking, not proven."),
+ # ---------- C · Consultation Integrity ----------
+ dict(id="C1", lens="C", slug="aboriginal-cultural-heritage-act",
+   title="Aboriginal Cultural Heritage Act 2021 — rushed, repealed in 5 weeks",
+   what="The Act passed both houses in ~5 weeks and came into force 1 July 2023; a ~29,000-signature petition sought delay.",
+   outcome="Repeal announced five weeks after commencement. A rushed process that failed landholders and Aboriginal people alike. A process failure, told evenhandedly.",
+   status="IGNORED", amount="", year="2021–2023",
+   source="Aboriginal Cultural Heritage Act 2021 (WA); repeal 8 Aug 2023",
+   confidence="HIGH", notes=""),
+ dict(id="C2", lens="C", slug="native-forest-logging-ban",
+   title="Native-forest logging ban — industry “blindsided”",
+   what="Government claimed consultation on ending native-forest logging.",
+   outcome="Timber industry and forest towns said they were “blindsided,” learning of a livelihood-reshaping decision through the announcement.",
+   status="IGNORED", amount="", year="2021",
+   source="6PR — industry “blindsided” by native forestry ban",
+   confidence="MEDIUM", notes=""),
+ dict(id="C3", lens="C", slug="wa-planning-reform-2023",
+   title="WA planning reform (2023) — claim not yet tested",
+   what="A large reform with extensive official consultation pages; the government presents a thorough process.",
+   outcome="Searching did not surface evidence the windows were tokenistic. Whether lived experience matched needs the primary-source window dates and submission mix. Unverified.",
+   status="UNVERIFIED", amount="", year="2023",
+   source="Planning and Development Amendment Act 2023 (WA)",
+   confidence="LOW",
+   notes="Need primary-source consultation window dates and submission mix before any use."),
+ dict(id="C4", lens="C", slug="wa-lg-amalgamations",
+   title="WA local-government amalgamations — process unverified",
+   what="WA has real history here (the metropolitan program that collapsed after ratepayer rejection is the obvious candidate).",
+   outcome="Specific consultation-process facts could not be verified in this pass. Needs dedicated primary-source work before any public use.",
+   status="UNVERIFIED", amount="", year="various",
+   source="WA local-government reform / amalgamation program",
+   confidence="LOW",
+   notes="Needs dedicated primary-source work before any public use."),
+ dict(id="C5", lens="C", slug="environment-online-covid",
+   title="Environment Online / COVID-era changes — unverified",
+   what="Plausible candidates for box-ticking consultation on environmental-approval reforms and COVID-era regulatory changes.",
+   outcome="Each needs its real window, announcement and stakeholder mix checked, not assumed. Plausible but unverified.",
+   status="UNVERIFIED", amount="", year="—",
+   source="WA Environment Online / environmental-approval & COVID-era reforms",
+   confidence="LOW",
+   notes="Placeholder candidates. Each needs its real window, announcement and stakeholder mix checked."),
+ # ---------- D · The Receipts ----------
+ dict(id="D1", lens="D", slug="deloitte-440k-ai-report",
+   title="Deloitte $440k AI report with fabricated citations",
+   what="DEWR paid Deloitte $440,000 to review the automated welfare-penalty system.",
+   outcome="The report carried a dozen-plus fabricated citations and a made-up Federal Court quote, produced with GPT-4o; caught by an academic. Deloitte repaid just $97,587 — under a quarter of the fee.",
+   status="PARTIAL", amount="$440,000 · refund $97,587", year="2024–2025",
+   source="DEWR Assurance Review; AusTender CN4118426; Sen. Pocock (Oct 2025)",
+   confidence="HIGH", notes=""),
+ dict(id="D2", lens="D", slug="pwc-tax-leaks",
+   title="PwC tax leaks — partner banned, 12 Senate recs",
+   what="A PwC partner used confidential Treasury information, received while advising government on an incoming anti-avoidance law, to help clients sidestep it.",
+   outcome="The Tax Practitioners Board terminated his registration; three federal inquiries followed; the Senate committee made 12 recommendations on consulting integrity.",
+   status="RECURRING", amount="", year="2023",
+   source="Tax Practitioners Board decision; Senate Finance & Public Administration Cttee",
+   confidence="HIGH", notes=""),
+ dict(id="D3", lens="D", slug="ato-it-contracts",
+   title="ATO IT contracts blew out $19.06m → $88.11m",
+   what="Six ATO advisor contracts for IT managed services rose from an approved $19.06m to $88.11m; contractors supply roughly half the ATO's annual IT spend.",
+   outcome="The ANAO found the value-for-money demonstration “deficient”; eight managed-services contracts worth ~$2.5bn over ten years underpin the dependency.",
+   status="OVERDUE", amount="$19.06m → $88.11m", year="2025",
+   source="ANAO, ATO Procurement of IT Managed Services (performance audit)",
+   confidence="HIGH", notes=""),
+ dict(id="D4", lens="D", slug="wa-1-6bn-it-blowout",
+   title="WA's $1.6bn IT blowout — 10 major projects",
+   what="The AG examined 10 major State IT projects estimated at $2.6bn.",
+   outcome="They rose to at least $4.2bn — a $1.6bn / 62% overrun; half at least doubled, 8 of 10 late by 4–78 months. $4.2bn is a floor.",
+   status="RECURRING", amount="$2.6bn → $4.2bn (+62%)", year="2025",
+   source="WA Auditor General, 2025 Transparency Report – Major IT Projects",
+   confidence="HIGH", notes="$4.2bn is a floor, not a total. Never sum ledger figures."),
+ dict(id="D5", lens="D", slug="qld-health-ibm-payroll",
+   title="Queensland Health / IBM payroll — $98m to ~$1.2bn",
+   what="A payroll system project contracted around $98m.",
+   outcome="Blew out to ~$1.2bn over eight years; the Commission of Inquiry called it in the “front rank of failures… may be the worst” and found a “distinct partiality for IBM.”",
+   status="RECURRING", amount="$98m → ~$1.2bn", year="2013 inquiry",
+   source="Queensland Health Payroll Commission of Inquiry (Chesterman), 2013",
+   confidence="HIGH", notes=""),
+ dict(id="D6", lens="D", slug="wa-hrmis-health-payroll",
+   title="WA HRMIS health payroll (Deloitte/SAP) — $220m and rising",
+   what="In 2022 Deloitte/SAP won a ~$220m contract to build WA Health's HR/payroll system.",
+   outcome="Now $274.8m — up $39.2m in a single budget, ~90% spent and still drawing funds.",
+   status="RECURRING", amount="$220m → $274.8m", year="2022–2026",
+   source="WA Health/DoF HRMIS contract disclosures; iTnews (2022)",
+   confidence="HIGH", notes="$274.8m is a moving figure; re-confirm at point of use."),
+ dict(id="D7", lens="D", slug="govnext-ict",
+   title="GovNext-ICT — the $65m savings that never came",
+   what="The GovNext-ICT program was sold on projected savings of $65m.",
+   outcome="The Department of Premier and Cabinet accepted the AG's finding: “little doubt that the projected $65 million savings… will not be achieved.”",
+   status="IGNORED", amount="$65m savings never realised", year="2018",
+   source="WA Auditor General, Implementation of the GovNext-ICT Program",
+   confidence="HIGH", notes=""),
+ dict(id="D8", lens="D", slug="office-of-shared-services",
+   title="Office of Shared Services — ~$370m to unwind",
+   what="WA's Office of Shared Services was sold as a savings program.",
+   outcome="Scrapped as a costly write-off: ~$370m to unwind after ~$258m had already been spent. Claimed savings became a loss.",
+   status="IGNORED", amount="~$370m to unwind", year="2011",
+   source="iTnews (2011), “WA to pay $370m to scrap shared services”",
+   confidence="MEDIUM", notes=""),
+ dict(id="D9", lens="D", slug="wa-consultant-shadow",
+   title="WA's consultant shadow — $7.3m reported vs $154.7m real",
+   what="WA disclosed just $7.3m of whole-of-government “consultants” (six months to June 2023).",
+   outcome="One agency — Health Support Services — spent $154.7m on “computer services” in a single year. The real spend hides under labels like “computer” and “professional” services.",
+   status="RECURRING", amount="$7.3m reported vs $154.7m", year="2023–2025",
+   source="Report on Consultants (tabled paper 2905); 2024-25 agency annual reports",
+   confidence="HIGH", notes="The $7.3m-vs-$154.7m contrast is a moving figure; re-confirm at point of use."),
+]
+
+SELF = [
+ dict(id="S1", text="Every figure in this project carries a source and a confidence flag.",
+      detail="Self-imposed · in force across all working docs", status="in force"),
+ dict(id="S2", text="Publish the pilot's baseline before it starts — no baseline, no claim.",
+      detail="Commitment · pre-launch", status="commitment"),
+ dict(id="S3", text="Publish a 12-month outcomes evaluation — the thing Target 120 never got.",
+      detail="Commitment · month 12", status="commitment"),
+ dict(id="S4", text="Lead with the hardest numbers; concede the soft ones in the open.",
+      detail="Self-imposed · honesty-flag ledger maintained", status="in force"),
+]
+
+def public_use(e):
+    """The demonstrator's HOLD rule, made explicit and non-drifting."""
+    return not (e["status"] == "UNVERIFIED" or e["confidence"] == "LOW")
+
+def hold_reason(e):
+    if public_use(e):
+        return ""
+    bits = []
+    if e["status"] == "UNVERIFIED":
+        bits.append("status UNVERIFIED")
+    if e["confidence"] == "LOW":
+        bits.append("confidence LOW")
+    return "HOLD: not for public use (" + ", ".join(bits) + "). " + (e.get("notes") or "")
+
+# assemble, deriving public_use + hold in a fixed field order
+entries = []
+for e in E:
+    entries.append({
+        "id": e["id"],
+        "lens": e["lens"],
+        "slug": e["slug"],
+        "title": e["title"],
+        "what": e["what"],
+        "outcome": e["outcome"],
+        "status": e["status"],
+        "amount": e["amount"],
+        "year": e["year"],
+        "source": e["source"],
+        "confidence": e["confidence"],
+        "public_use": public_use(e),
+        "hold_reason": hold_reason(e).strip(),
+        "notes": e.get("notes", ""),
+    })
+
+register = {
+    "ledger": "Open Accountability Ledger",
+    "version": VERSION,
+    "generated": GENERATED,
+    "status": "build-phase demonstrator — internal, not for publication",
+    "prepared_for": "Office of Bevan Eatts MLA (Nationals WA, Member for Warren-Blackwood)",
+    "one_line": "One public, permanent, machine-readable register of what government was told, what it promised, and what it did.",
+    "discipline": {
+        "direction": "Radical transparency pointed upward at power, not downward at the public. Holds recommendations, not people.",
+        "robodebt_guardrail": "No personal data, no algorithm over any citizen, no automated decision about anyone. The opposite of Robodebt, on purpose.",
+        "enforcement": "Check the ledger before you write the cheque: any business case to commission external research/consultancy must first cite the ledger and show the question is genuinely unanswered, or state on the record why it departs from what was already recommended.",
+        "honesty_rule": "Every figure carries a source and a confidence flag. Figures are never summed — each has its own source. Entries with status UNVERIFIED or confidence LOW are withheld from public use (public_use=false) and flagged HOLD.",
+    },
+    "lens_order": ["A", "B", "C", "D"],
+    "lenses": LENSES,
+    "status_values": STATUS_VALUES,
+    "confidence_values": CONFIDENCE_VALUES,
+    "self_commitments": SELF,
+    "entries": entries,
+    "headline": {
+        "entries_total": len(entries),
+        "fully_acted_on": sum(1 for e in entries if e["status"] == "DONE"),
+        "ignored_recurring_or_overdue": sum(1 for e in entries if e["status"] in ("IGNORED", "RECURRING", "OVERDUE")),
+        "on_hold": sum(1 for e in entries if not e["public_use"]),
+        "largest_single_wa_blowout": "$1.6bn",
+        "note": "Counts describe the register; dollar figures are never summed.",
+    },
+}
+
+# house-style pass over the whole register (metadata, lenses, entries, everything)
+register = normalize(register)
+
+out = pathlib.Path(__file__).resolve().parent.parent / "data" / "open_accountability_ledger.json"
+raw = json.dumps(register, indent=2, ensure_ascii=False) + "\n"
+out.write_text(raw, encoding="utf-8")
+banned = {c: raw.count(c) for c in ["—", "→", "·", "–"] if raw.count(c)}
+print(f"wrote {out}  ({len(entries)} entries, {register['headline']['on_hold']} on hold)")
+print(f"banned punctuation remaining: {banned or 'none'}")
