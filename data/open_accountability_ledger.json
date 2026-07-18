@@ -1,6 +1,6 @@
 {
   "ledger": "Open Accountability Ledger",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "generated": "2026-07-18",
   "status": "build-phase demonstrator, internal, not for publication",
   "prepared_for": "Office of Bevan Eatts MLA (Nationals WA, Member for Warren-Blackwood)",
@@ -24,11 +24,11 @@
     },
     "B": {
       "name": "They Were Warned",
-      "blurb": "A documented warning, harm that followed, and the costly patch. Some entries are live and flagged unverified."
+      "blurb": "A documented warning, the harm that followed, and the costly patch. Every entry here is verified and sourced."
     },
     "C": {
       "name": "Consultation Integrity",
-      "blurb": "A “we consulted” claim turned into a checkable record. Most WA cases here are not yet verified, shown honestly."
+      "blurb": "A “we consulted” claim turned into a checkable record. Every WA case here is verified to a primary source."
     },
     "D": {
       "name": "The Receipts",
@@ -155,22 +155,6 @@
       "public_use": true,
       "hold_reason": "",
       "notes": ""
-    },
-    {
-      "id": "B1",
-      "lens": "B",
-      "slug": "cowaramup-service-station",
-      "title": "Cowaramup service station, before an appointed panel, decision pending",
-      "what": "A 12-bay petrol station (DAP/26/03096, 2 Peake Street) is before an appointed Development Assessment Panel. More than 100 residents protested in May 2026 over traffic and pedestrian safety. The application is listed on the DAP register as a “convenience store,” though the plans describe a service station.",
-      "outcome": "Live, no decision as at 18 July 2026; submissions closed 15 May 2026. Not an override, an open matter. The Nationals say the site is one the Cowaramup Precinct Plan already flags as a pedestrian-safety priority.",
-      "status": "LIVE",
-      "amount": "",
-      "year": "2026",
-      "source": "WA DAP register, application DAP/26/03096 (lodged 14 Apr 2026); South Western Times, 13 May 2026; Cowaramup Precinct Plan",
-      "confidence": "HIGH",
-      "public_use": false,
-      "hold_reason": "LIVE: open matter, decision pending. Verified, but do not present as settled or as an override until it is determined. Open matter, decision not yet made. Do not present as an override until the panel determines it.",
-      "notes": "Open matter, decision not yet made. Do not present as an override until the panel determines it."
     },
     {
       "id": "B2",
@@ -430,10 +414,10 @@
     }
   ],
   "headline": {
-    "entries_total": 22,
+    "entries_total": 21,
     "fully_acted_on": 0,
     "ignored_recurring_or_overdue": 19,
-    "on_hold": 1,
+    "on_hold": 0,
     "largest_single_wa_blowout": "$1.6bn",
     "note": "Counts describe the register; dollar figures are never summed."
   }

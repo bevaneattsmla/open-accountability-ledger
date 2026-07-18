@@ -81,12 +81,12 @@
         "outcome": { "type": "string", "minLength": 1, "description": "What happened / whether it was acted on." },
         "status": { "type": "string", "enum": ["DONE", "PARTIAL", "IGNORED", "RECURRING", "OVERDUE", "LIVE", "UNVERIFIED"] },
         "amount": { "type": "string", "description": "Display string only. Figures are never summed; may be empty." },
-        "year": { "type": "string", "description": "Display string; may be a single year or a range like '1921 → 2027'." },
+        "year": { "type": "string", "description": "Display string; may be a single year or a range like '1921 to 2027'." },
         "source": { "type": "string", "minLength": 1 },
         "confidence": { "type": "string", "enum": ["HIGH", "MEDIUM", "LOW"] },
         "public_use": {
           "type": "boolean",
-          "description": "Derived: false when status is UNVERIFIED or confidence is LOW."
+          "description": "Derived: false when status is UNVERIFIED or LIVE, or confidence is LOW."
         },
         "hold_reason": { "type": "string", "description": "Non-empty iff public_use is false." },
         "notes": { "type": "string" }
