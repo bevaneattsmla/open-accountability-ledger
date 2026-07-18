@@ -79,7 +79,7 @@
         "title": { "type": "string", "minLength": 1 },
         "what": { "type": "string", "minLength": 1, "description": "What government was told, warned or claimed." },
         "outcome": { "type": "string", "minLength": 1, "description": "What happened / whether it was acted on." },
-        "status": { "type": "string", "enum": ["DONE", "PARTIAL", "IGNORED", "RECURRING", "OVERDUE", "UNVERIFIED"] },
+        "status": { "type": "string", "enum": ["DONE", "PARTIAL", "IGNORED", "RECURRING", "OVERDUE", "LIVE", "UNVERIFIED"] },
         "amount": { "type": "string", "description": "Display string only. Figures are never summed; may be empty." },
         "year": { "type": "string", "description": "Display string; may be a single year or a range like '1921 → 2027'." },
         "source": { "type": "string", "minLength": 1 },
@@ -100,6 +100,11 @@
         {
           "description": "public_use must be false when confidence is LOW",
           "if": { "properties": { "confidence": { "const": "LOW" } } },
+          "then": { "properties": { "public_use": { "const": false } } }
+        },
+        {
+          "description": "public_use must be false for a LIVE (undecided) matter",
+          "if": { "properties": { "status": { "const": "LIVE" } } },
           "then": { "properties": { "public_use": { "const": false } } }
         }
       ]

@@ -1,6 +1,6 @@
 {
   "ledger": "Open Accountability Ledger",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "generated": "2026-07-18",
   "status": "build-phase demonstrator, internal, not for publication",
   "prepared_for": "Office of Bevan Eatts MLA (Nationals WA, Member for Warren-Blackwood)",
@@ -41,7 +41,8 @@
     "IGNORED": "Answer/warning on the record; not acted on.",
     "RECURRING": "The same failure or finding recurs year after year.",
     "OVERDUE": "Action required and past due.",
-    "UNVERIFIED": "Not yet confirmed to a primary source, or a live matter not yet decided."
+    "LIVE": "An open, ongoing matter that is verified but not yet decided; shown flagged, never as settled.",
+    "UNVERIFIED": "Not yet confirmed to a primary source."
   },
   "confidence_values": {
     "HIGH": "Confirmed to a primary source; safe to use.",
@@ -159,17 +160,17 @@
       "id": "B1",
       "lens": "B",
       "slug": "cowaramup-service-station",
-      "title": "Cowaramup service station, warned live, decision pending",
-      "what": "A 12-bay service station is before an unelected Development Assessment Panel; 100+ residents protested on the safety grounds the town's own Precinct Plan already flags.",
-      "outcome": "Live, decision NOT yet made. In 2017 a servo drew 297 objections and was rejected, yet a truckstop operates there now. Not an “override” yet.",
-      "status": "UNVERIFIED",
+      "title": "Cowaramup service station, before an appointed panel, decision pending",
+      "what": "A 12-bay petrol station (DAP/26/03096, 2 Peake Street) is before an appointed Development Assessment Panel. More than 100 residents protested in May 2026 over traffic and pedestrian safety. The application is listed on the DAP register as a “convenience store,” though the plans describe a service station.",
+      "outcome": "Live, no decision as at 18 July 2026; submissions closed 15 May 2026. Not an override, an open matter. The Nationals say the site is one the Cowaramup Precinct Plan already flags as a pedestrian-safety priority.",
+      "status": "LIVE",
       "amount": "",
       "year": "2026",
-      "source": "DAP application DAP/26/03096 (Apr 2026); resident protest May 2026",
-      "confidence": "MEDIUM",
+      "source": "WA DAP register, application DAP/26/03096 (lodged 14 Apr 2026); South Western Times, 13 May 2026; Cowaramup Precinct Plan",
+      "confidence": "HIGH",
       "public_use": false,
-      "hold_reason": "HOLD: not for public use (status UNVERIFIED). Live matter, decision not yet made. Do not present as an override until the DAP determines it.",
-      "notes": "Live matter, decision not yet made. Do not present as an override until the DAP determines it."
+      "hold_reason": "LIVE: open matter, decision pending. Verified, but do not present as settled or as an override until it is determined. Open matter, decision not yet made. Do not present as an override until the panel determines it.",
+      "notes": "Open matter, decision not yet made. Do not present as an override until the panel determines it."
     },
     {
       "id": "B2",
@@ -220,22 +221,6 @@
       "notes": "Confirm the FPC to DBCA handover scope before public use."
     },
     {
-      "id": "B5",
-      "lens": "B",
-      "slug": "cds-regional-refund-access",
-      "title": "CDS regional refund-point access, warned 2018",
-      "what": "A 2018 warning held that regional and remote communities would struggle to access container refund points.",
-      "outcome": "The warning is real and documented, but we could not confirm it materialised into closures or harm. Held as “worth checking,” not proven.",
-      "status": "UNVERIFIED",
-      "amount": "",
-      "year": "2018",
-      "source": "2018 regional/remote refund-point access warning",
-      "confidence": "LOW",
-      "public_use": false,
-      "hold_reason": "HOLD: not for public use (status UNVERIFIED, confidence LOW). Warning documented but not confirmed to have materialised into harm. Worth checking, not proven.",
-      "notes": "Warning documented but not confirmed to have materialised into harm. Worth checking, not proven."
-    },
-    {
       "id": "C1",
       "lens": "C",
       "slug": "aboriginal-cultural-heritage-act",
@@ -268,52 +253,36 @@
       "notes": ""
     },
     {
-      "id": "C3",
-      "lens": "C",
-      "slug": "wa-planning-reform-2023",
-      "title": "WA planning reform (2023), claim not yet tested",
-      "what": "A large reform with extensive official consultation pages; the government presents a thorough process.",
-      "outcome": "Searching did not surface evidence the windows were tokenistic. Whether lived experience matched needs the primary-source window dates and submission mix. Unverified.",
-      "status": "UNVERIFIED",
-      "amount": "",
-      "year": "2023",
-      "source": "Planning and Development Amendment Act 2023 (WA)",
-      "confidence": "LOW",
-      "public_use": false,
-      "hold_reason": "HOLD: not for public use (status UNVERIFIED, confidence LOW). Need primary-source consultation window dates and submission mix before any use.",
-      "notes": "Need primary-source consultation window dates and submission mix before any use."
-    },
-    {
       "id": "C4",
       "lens": "C",
       "slug": "wa-lg-amalgamations",
-      "title": "WA local-government amalgamations, process unverified",
-      "what": "WA has real history here (the metropolitan program that collapsed after ratepayer rejection is the obvious candidate).",
-      "outcome": "Specific consultation-process facts could not be verified in this pass. Needs dedicated primary-source work before any public use.",
-      "status": "UNVERIFIED",
+      "title": "WA council mergers, government tried to remove the ratepayer vote",
+      "what": "From 2013 the Barnett Government moved to cut Perth's 30 metropolitan councils to around 14 to 16, and sought to suspend the “Dadour” provisions, the electors' statutory right to force a binding poll on a merger. Where mergers would have triggered those polls, it used boundary-change orders that carried no poll right. WALGA called it an “effective removal of the democratic process.”",
+      "outcome": "Ratepayers stopped it, not the government. Where the poll right survived, electors voted on 7 February 2015 and rejected the mergers by 76 to 88 per cent (Kwinana 88% no, South Perth 78%, East Fremantle 76%). The government shelved the program on 17 February 2015.",
+      "status": "IGNORED",
       "amount": "",
-      "year": "various",
-      "source": "WA local-government reform / amalgamation program",
-      "confidence": "LOW",
-      "public_use": false,
-      "hold_reason": "HOLD: not for public use (status UNVERIFIED, confidence LOW). Needs dedicated primary-source work before any public use.",
-      "notes": "Needs dedicated primary-source work before any public use."
+      "year": "2013 to 2015",
+      "source": "WA metropolitan local-government amalgamation program; 7 Feb 2015 ratepayer polls; Policy Quarterly, “Local Government Reform in Western Australia”",
+      "confidence": "HIGH",
+      "public_use": true,
+      "hold_reason": "",
+      "notes": "Merger targets shifted across the program's stages; cite the reduction as a range (30 to around 14-16)."
     },
     {
       "id": "C5",
       "lens": "C",
-      "slug": "environment-online-covid",
-      "title": "Environment Online / COVID-era changes, unverified",
-      "what": "Plausible candidates for box-ticking consultation on environmental-approval reforms and COVID-era regulatory changes.",
-      "outcome": "Each needs its real window, announcement and stakeholder mix checked, not assumed. Plausible but unverified.",
-      "status": "UNVERIFIED",
+      "slug": "covid-significant-development-pathway",
+      "title": "COVID-era “significant development” pathway cut out councils and the public",
+      "what": "In 2020 the McGowan Government created the Part 17 “significant development” pathway (Planning and Development Amendment Act 2020) as a temporary COVID-recovery measure to fast-track major projects. It sent decisions to the WA Planning Commission, removed local government, and made public consultation discretionary rather than required.",
+      "outcome": "WALGA's 2020 to 2025 review found councils supported only about 30% of pathway applications, against about 90% for Development Assessment Panels and about 99% for locally-decided ones, and found the pathway “removed Local Government from decision making.” The “temporary” pathway was later extended, not lapsed.",
+      "status": "IGNORED",
       "amount": "",
-      "year": "",
-      "source": "WA Environment Online / environmental-approval & COVID-era reforms",
-      "confidence": "LOW",
-      "public_use": false,
-      "hold_reason": "HOLD: not for public use (status UNVERIFIED, confidence LOW). Placeholder candidates. Each needs its real window, announcement and stakeholder mix checked.",
-      "notes": "Placeholder candidates. Each needs its real window, announcement and stakeholder mix checked."
+      "year": "2020 to 2025",
+      "source": "Planning and Development Amendment Act 2020 (WA), Part 17; WALGA, Significant Development Pathway 2020 to 2025 Review (Apr 2025)",
+      "confidence": "MEDIUM",
+      "public_use": true,
+      "hold_reason": "",
+      "notes": "Framed as a reform that reduced consultation, not a false “we consulted” claim. Confirm at point of use."
     },
     {
       "id": "D1",
@@ -461,10 +430,10 @@
     }
   ],
   "headline": {
-    "entries_total": 24,
+    "entries_total": 22,
     "fully_acted_on": 0,
-    "ignored_recurring_or_overdue": 17,
-    "on_hold": 5,
+    "ignored_recurring_or_overdue": 19,
+    "on_hold": 1,
     "largest_single_wa_blowout": "$1.6bn",
     "note": "Counts describe the register; dollar figures are never summed."
   }
