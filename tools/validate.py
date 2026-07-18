@@ -23,7 +23,7 @@ except jsonschema.ValidationError as e:
 
 print("2. HOLD rule correctly derived on every entry")
 for e in entries:
-    want = not (e["status"]=="UNVERIFIED" or e["confidence"]=="LOW")
+    want = not (e["status"] in ("UNVERIFIED","LIVE") or e["confidence"]=="LOW")
     check(e["public_use"]==want, f"{e['id']} public_use={e['public_use']} (rule wants {want})")
     check(bool(e["hold_reason"]) == (not want), f"{e['id']} hold_reason presence matches")
 
@@ -38,10 +38,11 @@ total=len(entries)
 done=sum(1 for e in entries if e["status"]=="DONE")
 hold=sum(1 for e in entries if not e["public_use"])
 by={k:sum(1 for e in entries if e['lens']==k) for k in 'ABCD'}
-check(total==24, f"24 entries (got {total})")
-check(done==0, f"fully acted on = 0 of 24 (got {done})")
-check(hold==5, f"5 on HOLD (got {hold}); ids {[e['id'] for e in entries if not e['public_use']]}")
-check(by=={'A':5,'B':5,'C':5,'D':9}, f"lens split A5/B5/C5/D9 (got {by})")
+check(total==21, f"21 entries (got {total})")
+check(done==0, f"fully acted on = 0 of 21 (got {done})")
+heldids=[e['id'] for e in entries if not e['public_use']]
+check(hold==0 and heldids==[], f"0 on HOLD, none held (got {hold}: {heldids})")
+check(by=={'A':5,'B':3,'C':4,'D':9}, f"lens split A5/B3/C4/D9 (got {by})")
 
 print("5. House rule: no banned punctuation anywhere in the register")
 BLOB=json.dumps(reg, ensure_ascii=False)
@@ -63,7 +64,7 @@ print("8. xlsx opens with all entries + sheets")
 try:
     from openpyxl import load_workbook
     wb=load_workbook(VIEWS/"open_accountability_ledger.xlsx")
-    check(wb["Entries"].max_row-3==total, "xlsx Entries has 24 data rows")
+    check(wb["Entries"].max_row-3==total, f"xlsx Entries has {total} data rows")
     check({"Entries","Self-commitments","Lenses & legend"}<=set(wb.sheetnames), "all three sheets present")
 except Exception as ex:
     check(False, f"xlsx error: {ex}")

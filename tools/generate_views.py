@@ -2,9 +2,9 @@
 """
 generate_views.py — derive human-editable views from the canonical JSON register.
 
-Reads open_accountability_ledger.json (the single source of truth) and writes:
-  - open_accountability_ledger.csv   : flat, one row per entry, opens in any spreadsheet
-  - open_accountability_ledger.xlsx  : styled editing workbook with status/confidence dropdowns
+Reads data/open_accountability_ledger.json (the single source of truth) and writes:
+  - views/open_accountability_ledger.csv   : flat, one row per entry, opens in any spreadsheet
+  - views/open_accountability_ledger.xlsx  : styled editing workbook with status/confidence dropdowns
 
 JSON is canonical. These are generated views — regenerate after editing the JSON.
 """
@@ -15,9 +15,8 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-HERE = ROOT / "views"          # views are written here
-DATA = ROOT / "data"           # register is read from here
-HERE.mkdir(exist_ok=True)
+DATA, VIEWS = ROOT / "data", ROOT / "views"
+VIEWS.mkdir(exist_ok=True)
 reg = json.loads((DATA / "open_accountability_ledger.json").read_text(encoding="utf-8"))
 entries = reg["entries"]
 
@@ -25,7 +24,7 @@ COLS = ["id","lens","title","what","outcome","status","amount","year","source","
 DERIVED = {"public_use","hold_reason"}  # auto-computed by build_register — do not hand-edit
 
 # ---- CSV -------------------------------------------------------------------
-csv_path = HERE / "open_accountability_ledger.csv"
+csv_path = VIEWS / "open_accountability_ledger.csv"
 with csv_path.open("w", newline="", encoding="utf-8-sig") as f:
     w = csv.DictWriter(f, fieldnames=COLS)
     w.writeheader()
@@ -45,13 +44,12 @@ wb = Workbook()
 # --- Sheet 1: Entries ---
 ws = wb.active
 ws.title = "Entries"
-# title band
 ws.merge_cells(start_row=1,start_column=1,end_row=1,end_column=len(COLS))
 c = ws.cell(1,1, f"Open Accountability Ledger — register v{reg['version']} · {reg['status']}")
 c.font = Font(bold=True, color="FFFFFF", size=12); c.fill = HDR_FILL
 c.alignment = Alignment(vertical="center", indent=1)
 ws.row_dimensions[1].height = 24
-note = ws.cell(2,1, "JSON is the source of truth. Columns public_use and hold_reason are AUTO-derived (status UNVERIFIED or confidence LOW → held). Edit status/confidence, not the derived columns; then regenerate.")
+note = ws.cell(2,1, "JSON is the source of truth. Columns public_use and hold_reason are AUTO-derived (status UNVERIFIED or LIVE, or confidence LOW, are held). Edit status/confidence, not the derived columns; then regenerate.")
 note.font = Font(italic=True, color=GREY, size=9)
 ws.merge_cells(start_row=2,start_column=1,end_row=2,end_column=len(COLS))
 
@@ -82,7 +80,6 @@ for i,e in enumerate(entries):
         if col=="public_use":
             cell.font = Font(size=10, bold=True, color=RED if held else GREEN)
 
-# widths
 W = {"id":6,"lens":6,"title":30,"what":42,"outcome":42,"status":12,"amount":18,
      "year":14,"source":34,"confidence":12,"public_use":11,"hold_reason":34,"notes":34}
 for j,col in enumerate(COLS, start=1):
@@ -90,7 +87,6 @@ for j,col in enumerate(COLS, start=1):
 ws.freeze_panes = f"A{HROW+1}"
 ws.auto_filter.ref = f"A{HROW}:{get_column_letter(len(COLS))}{HROW+len(entries)}"
 
-# dropdowns on status + confidence
 last = HROW + len(entries)
 dv_status = DataValidation(type="list",
     formula1='"DONE,PARTIAL,IGNORED,RECURRING,OVERDUE,UNVERIFIED"', allow_blank=False)
@@ -132,6 +128,6 @@ r=block(ws3,r,"The discipline", reg.get("discipline",{}))
 ws3.column_dimensions["A"].width = 26
 ws3.column_dimensions["B"].width = 90
 
-xlsx_path = HERE / "open_accountability_ledger.xlsx"
+xlsx_path = VIEWS / "open_accountability_ledger.xlsx"
 wb.save(xlsx_path)
 print(f"wrote {csv_path.name} and {xlsx_path.name} from {len(entries)} entries")
