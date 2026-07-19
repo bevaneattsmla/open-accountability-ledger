@@ -41,8 +41,8 @@ by={k:sum(1 for e in entries if e['lens']==k) for k in 'ABCD'}
 check(total==29, f"29 entries (got {total})")
 check(done==0, f"fully acted on = 0 of 29 (got {done})")
 heldids=[e['id'] for e in entries if not e['public_use']]
-HELD={'A6','A7','A8','A9','A10','A11','A12'}
-check(hold==7 and set(heldids)==HELD, f"7 on HOLD ({sorted(HELD)}) (got {hold}: {heldids})")
+HELD={'A6','A9'}
+check(hold==2 and set(heldids)==HELD, f"2 on HOLD ({sorted(HELD)}) (got {hold}: {heldids})")
 check(by=={'A':12,'B':4,'C':4,'D':9}, f"lens split A12/B4/C4/D9 (got {by})")
 
 print("5. House rule: no banned punctuation anywhere in the register")
